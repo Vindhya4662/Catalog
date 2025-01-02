@@ -59,7 +59,7 @@ void parse_json(const char *filename, int *n, int *k, int x[], long long y[]) {
         if (pos) {
             sscanf(pos, "\"%*d\": { \"base\": \"%[^\"]\", \"value\": \"%[^\"]\" }", base_str, value);
 
-            x[count] = i; // Use i as the x-coordinate
+            x[count] = i;
             y[count] = decode_base(value, atoi(base_str));
             count++;
         }
