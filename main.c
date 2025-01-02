@@ -16,11 +16,11 @@ long long decode_base(const char *value, int base) {
 }
 
 
-double calculate_constant_term(int n, int x[], long long y[]) {
+double calculate_constant_term(int k, int x[], long long y[]) {
     double constant = 0.0;
-    for (int i = 0; i < n; i++) {
+    for (int i = 0; i < k; i++) {
         double term = y[i];
-        for (int j = 0; j < n; j++) {
+        for (int j = 0; j < k; j++) {
             if (i != j) {
                 term *= (double)(0 - x[j]) / (x[i] - x[j]);
             }
@@ -45,33 +45,43 @@ void parse_json(const char *filename, int *n, int *k, int x[], long long y[]) {
     char *pos;
     char key[10], value[50], base_str[10];
 
+   
     pos = strstr(buffer, "\"n\":");
     sscanf(pos, "\"n\": %d", n);
 
     pos = strstr(buffer, "\"k\":");
     sscanf(pos, "\"k\": %d", k);
 
-   
-    for (int i = 1; i <= *n; i++) {
+    int count = 0;
+    for (int i = 1; i <= *n + 2; i++) { 
         snprintf(key, sizeof(key), "\"%d\":", i);
         pos = strstr(buffer, key);
-        sscanf(pos, "\"%*d\": { \"base\": \"%[^\"]\", \"value\": \"%[^\"]\" }", base_str, value);
+        if (pos) {
+            sscanf(pos, "\"%*d\": { \"base\": \"%[^\"]\", \"value\": \"%[^\"]\" }", base_str, value);
 
-        x[i - 1] = i; 
-        y[i - 1] = decode_base(value, atoi(base_str));
+            x[count] = i; // Use i as the x-coordinate
+            y[count] = decode_base(value, atoi(base_str));
+            count++;
+        }
+    }
+
+    
+    if (count < *k) {
+        printf("Error: Not enough roots to compute polynomial (k=%d, available=%d).\n", *k, count);
+        exit(1);
     }
 }
 
 int main() {
     int n, k;
-    int x[10];            
+    int x[10];           
     long long y[10];
 
     parse_json("input.json", &n, &k, x, y);
 
     double constant = calculate_constant_term(k, x, y);
 
-    printf("The constant term (c) of the polynomial is: %.2f\n", constant);
+    printf("The constant term (c) of the polynomial is: %.10lf\n", constant);
 
     return 0;
 }
